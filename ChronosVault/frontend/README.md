@@ -1,32 +1,76 @@
-# React + TypeScript + Vite
+# 🔐 ChronosVault
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+> A decentralized, non-custodial time-capsule protocol built on Base
 
-Currently, two official plugins are available:
+ChronosVault allows users to lock crypto assets and digital
+inheritances on-chain — releasing them automatically only after
+a specified future timestamp. Zero intermediaries. Zero custody
+risk. Pure mathematics.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🌐 Live Deployment
 
-## React Compiler
+- **Network:** Base Sepolia Testnet
+- **Contract:** `0xYOUR_CONTRACT_ADDRESS_HERE`
+- **Explorer:** https://sepolia.basescan.org/address/0xYOUR_ADDRESS
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🎯 What Problem It Solves
 
-## Expanding the Oxlint configuration
+Traditional trust funds and inheritance escrows rely on lawyers,
+banks, and centralized services — costing thousands in fees and
+taking months to execute. ChronosVault replaces all of that with
+a single, immutable smart contract.
 
-If you are developing a production application, we recommend enabling type-aware lint rules by installing `oxlint-tsgolint` and editing `.oxlintrc.json`:
+## ✨ Key Features
 
-```json
-{
-  "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "typescript", "oxc"],
-  "options": {
-    "typeAware": true
-  },
-  "rules": {
-    "react/rules-of-hooks": "error",
-    "react/only-export-components": ["warn", { "allowConstantExport": true }]
-  }
-}
+- 🔒 **Trustless Time-Lock** — enforced by EVM block.timestamp
+- 👤 **Non-Custodial** — creator cannot retrieve funds early
+- 📨 **Encrypted Messages** — lock notes for the recipient
+- ⚡ **One-Click Claim** — recipient claims with one transaction
+- 🌐 **Built on Base** — fast, cheap, Coinbase-backed L2
+
+## 🏗 Tech Stack
+
+| Layer          | Technology                |
+| -------------- | ------------------------- |
+| Smart Contract | Solidity 0.8.19           |
+| Framework      | Hardhat 3 + Ignition      |
+| Frontend       | React + TypeScript + Vite |
+| Wallet         | wagmi v2 + MetaMask       |
+| Network        | Base Sepolia Testnet      |
+
+## 📋 Contract Functions
+
+- `constructor()` — Deploy a new vault with recipient, unlock time, ETH
+- `claim()` — Recipient claims vault after unlock time passes
+- `getVaultInfo()` — Read all vault parameters (view function)
+- `timeUntilUnlock()` — Seconds remaining until unlock
+
+## 🚀 How to Run Locally
+
+```bash
+# Clone the repo
+git clone https://github.com/RahulRauniyar123/ChronosVault
+
+# Install contract dependencies
+npm install
+
+# Create .env file
+echo "PRIVATE_KEY=your_key_here" > .env
+
+# Deploy to Base Sepolia
+npx hardhat ignition deploy ignition/modules/ChronosVault.ts --network baseSepolia
+
+# Run frontend
+cd frontend && npm install && npm run dev
 ```
 
-See the [Oxlint rules documentation](https://oxc.rs/docs/guide/usage/linter/rules) for the full list of rules and categories.
+## 🔐 Security Design
+
+- No admin keys — creator cannot bypass the time-lock
+- Zero external dependencies — smaller attack surface
+- All validations enforced at contract level
+- Explicit confirmation flow in frontend prevents accidents
+
+## 👤 Built By
+
+Rahul Rauniyar — Crypto World's Fair Hackathon 2026
