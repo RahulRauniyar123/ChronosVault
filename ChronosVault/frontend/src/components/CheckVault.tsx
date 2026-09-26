@@ -1,7 +1,41 @@
 import { useState } from 'react'
 import { useReadContract, useWriteContract, useAccount } from 'wagmi'
 import { formatEther } from 'viem'
-import { CHRONOSVAULT_ABI } from '../constants/contract'
+
+const CHRONOSVAULT_ABI = [
+  {
+    inputs: [],
+    name: 'getVaultInfo',
+    outputs: [
+      { name: 'creator', type: 'address' },
+      { name: 'recipient', type: 'address' },
+      { name: 'unlockTime', type: 'uint256' },
+      { name: 'balance', type: 'uint256' },
+      { name: 'claimed', type: 'bool' },
+      { name: 'unlocked', type: 'bool' }
+    ],
+    stateMutability: 'view',
+    type: 'function'
+  },
+  {
+    inputs: [],
+    name: 'claim',
+    outputs: [],
+    stateMutability: 'nonpayable',
+    type: 'function'
+  }
+] as const
+
+const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000' as const
+
+type VaultInfo = readonly [
+  creator: `0x${string}`,
+  recipient: `0x${string}`,
+  unlockTime: bigint,
+  balance: bigint,
+  claimed: boolean,
+  unlocked: boolean
+]
 
 function getStatusClass(claimed: unknown, unlocked: unknown): string {
   if (claimed) return 'claimed'
@@ -20,8 +54,8 @@ export default function CheckVault() {
   const [vaultAddr, setVaultAddr] = useState('')
   const [checked, setChecked] = useState<`0x${string}` | null>(null)
 
-  const { data: info } = useReadContract({
-    address: checked ?? '0x0000000000000000000000000000000000000000',
+  const { data: info, isPending: isLoading } = useReadContract({
+    address: checked ?? ZERO_ADDRESS,
     abi: CHRONOSVAULT_ABI,
     functionName: 'getVaultInfo',
     query: { enabled: !!checked }
@@ -29,13 +63,8 @@ export default function CheckVault() {
 
   const { writeContract, isPending } = useWriteContract()
 
-  const infoArr = (info as unknown[]) ?? []
-  const creator = infoArr[0] as string
-  const recipient = infoArr[1] as string
-  const unlockTime = infoArr[2] as bigint
-  const balance = infoArr[3] as bigint
-  const claimed = infoArr[4] as boolean
-  const unlocked = infoArr[5] as boolean
+  const [creator, recipient, unlockTime, balance, claimed, unlocked] =
+    (info as VaultInfo | undefined) ?? []
 
   const isRecipient = address?.toLowerCase() === recipient?.toLowerCase()
   const unlockDate = unlockTime
@@ -58,11 +87,21 @@ export default function CheckVault() {
           />
           <button
             className="btn-primary"
-            onClick={() => setChecked(vaultAddr as `0x${string}`)}
+            onClick={() => {
+              if (/^0x[a-fA-F0-9]{40}$/.test(vaultAddr)) {
+                setChecked(vaultAddr as `0x${string}`)
+              }
+            }}
           >
             🔍 Check
           </button>
         </div>
+
+        {checked && isLoading && (
+          <div className="connect-warn">
+            ⏳ Reading from blockchain...
+          </div>
+        )}
 
         {checked && info && (
           <div className="vault-card">

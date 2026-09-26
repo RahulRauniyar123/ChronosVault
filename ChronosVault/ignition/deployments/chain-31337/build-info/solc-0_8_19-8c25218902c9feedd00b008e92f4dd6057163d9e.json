@@ -1,0 +1,49 @@
+{
+  "_format": "hh3-sol-build-info-1",
+  "id": "solc-0_8_19-8c25218902c9feedd00b008e92f4dd6057163d9e",
+  "solcVersion": "0.8.19",
+  "solcLongVersion": "0.8.19+commit.7dd6d404",
+  "compilerType": "solc",
+  "toolVersions": {
+    "hardhat": "3.17.0"
+  },
+  "userSourceNameMap": {
+    "contracts/ChronosVault.sol": "project/contracts/ChronosVault.sol"
+  },
+  "input": {
+    "language": "Solidity",
+    "settings": {
+      "evmVersion": "paris",
+      "optimizer": {
+        "enabled": true,
+        "runs": 200
+      },
+      "outputSelection": {
+        "*": {
+          "": [
+            "ast"
+          ],
+          "*": [
+            "abi",
+            "evm.bytecode.linkReferences",
+            "evm.bytecode.object",
+            "evm.bytecode.opcodes",
+            "evm.bytecode.sourceMap",
+            "evm.deployedBytecode.immutableReferences",
+            "evm.deployedBytecode.linkReferences",
+            "evm.deployedBytecode.object",
+            "evm.deployedBytecode.opcodes",
+            "evm.deployedBytecode.sourceMap",
+            "evm.methodIdentifiers"
+          ]
+        }
+      },
+      "remappings": []
+    },
+    "sources": {
+      "project/contracts/ChronosVault.sol": {
+        "content": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.8.19;\r\n\r\ncontract ChronosVault {\r\n\r\n    address payable public recipient;\r\n    address public creator;\r\n    uint256 public unlockTime;\r\n    bool public claimed;\r\n    string public encryptedMessage;\r\n\r\n    event VaultCreated(\r\n        address indexed creator,\r\n        address indexed recipient,\r\n        uint256 unlockTime,\r\n        uint256 amount\r\n    );\r\n\r\n    event VaultClaimed(\r\n        address indexed recipient,\r\n        uint256 amount,\r\n        uint256 claimedAt\r\n    );\r\n\r\n    constructor(\r\n        address payable _recipient,\r\n        uint256 _unlockTime,\r\n        string memory _encryptedMessage\r\n    ) payable {\r\n        require(_recipient != address(0), \"Invalid recipient\");\r\n        require(_unlockTime > block.timestamp, \"Must be future time\");\r\n        require(msg.value > 0, \"Must deposit ETH\");\r\n\r\n        creator = msg.sender;\r\n        recipient = _recipient;\r\n        unlockTime = _unlockTime;\r\n        encryptedMessage = _encryptedMessage;\r\n        claimed = false;\r\n\r\n        emit VaultCreated(msg.sender, _recipient, _unlockTime, msg.value);\r\n    }\r\n\r\n    function claim() external {\r\n        require(!claimed, \"Already claimed\");\r\n        require(block.timestamp >= unlockTime, \"Still locked\");\r\n        require(msg.sender == recipient, \"Not recipient\");\r\n\r\n        claimed = true;\r\n        uint256 balance = address(this).balance;\r\n        recipient.transfer(balance);\r\n\r\n        emit VaultClaimed(recipient, balance, block.timestamp);\r\n    }\r\n\r\n    function getVaultInfo() external view returns (\r\n        address, address, uint256, uint256, bool, bool\r\n    ) {\r\n        return (\r\n            creator,\r\n            recipient,\r\n            unlockTime,\r\n            address(this).balance,\r\n            claimed,\r\n            block.timestamp >= unlockTime\r\n        );\r\n    }\r\n\r\n    function timeUntilUnlock() external view returns (uint256) {\r\n        if (block.timestamp >= unlockTime) return 0;\r\n        return unlockTime - block.timestamp;\r\n    }\r\n\r\n    receive() external payable {\r\n        revert(\"Use constructor only\");\r\n    }\r\n}"
+      }
+    }
+  }
+}
